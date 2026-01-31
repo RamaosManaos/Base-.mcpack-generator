@@ -19,13 +19,15 @@
       --bg-color: #0b0e14; --card-bg: #161b22; --panel-bg: #1c2128;
       --text-color: #f0f6fc; --text-dim: #8b949e; --border-color: #30363d;
       --accent-color: #58a6ff; --danger: #ff4444; --input-bg: #0d1117;
-      --success: #238636;
+      /* Eliminado el verde, ahora usamos el accent para éxito también si se requiere */
+      --success: #58a6ff; 
     }
 
     body.light {
       --bg-color: #f6f8fa; --card-bg: #ffffff; --panel-bg: #f0f2f5;
       --text-color: #1f2328; --text-dim: #57606a; --border-color: #d0d7de;
       --accent-color: #0969da; --input-bg: #ffffff;
+      --success: #0969da;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -53,8 +55,9 @@
     .style-row { display: flex; gap: 8px; }
     .btn-style { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-color); font-size: 12px; cursor: pointer; font-weight: bold; }
 
-    input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); border-radius: 12px; color: var(--text-color); margin-bottom: 10px; outline: none; font-size: 14px; }
-    
+    input[type="text"], input[type="number"], textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); border-radius: 12px; color: var(--text-color); margin-bottom: 10px; outline: none; font-size: 14px; font-family: inherit; }
+    textarea { resize: vertical; min-height: 80px; }
+
     .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .input-group label { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; display: block; font-weight: 700; }
 
@@ -74,7 +77,8 @@
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px; }
     .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--success); }
+    /* AQUI ESTÁ EL CAMBIO DE COLOR A AZUL (accent-color) */
+    input:checked + .slider { background-color: var(--accent-color); }
     input:checked + .slider:before { transform: translateX(16px); }
 
     .export-mode-container { background: var(--panel-bg); padding: 5px; border-radius: 15px; display: flex; position: relative; border: 1px solid var(--border-color); margin-top: 30px; cursor: pointer; height: 50px; }
@@ -132,25 +136,25 @@
         </div>
       </div>
 
-      <input type="text" id="inName" class="mc-input" data-placeholder="phName" autocomplete="off">
-      <input type="text" id="inAuthor" class="mc-input" data-placeholder="phAuthor" autocomplete="off">
-      <input type="text" id="inDesc" class="mc-input" data-placeholder="phDesc" autocomplete="off">
+      <input type="text" id="inName" class="mc-input" data-placeholder="phName" autocomplete="off" value="">
+      <input type="text" id="inAuthor" class="mc-input" data-placeholder="phAuthor" autocomplete="off" value="">
+      <input type="text" id="inDesc" class="mc-input" data-placeholder="phDesc" autocomplete="off" value="">
 
       <div class="config-grid">
         <div class="input-group">
           <label data-i18n="packVer">Pack Version</label>
-          <input type="text" id="inPackVer" value="1.0.0" placeholder="e.g. 25.12.26">
+          <input type="text" id="inPackVer" value="1.0.0" placeholder="e.g. 1.0.0">
         </div>
         <div class="input-group">
           <label data-i18n="minVer">Min Engine Version</label>
-          <input type="text" id="inMinVer" value="1.21.0" placeholder="e.g. 1.21.130">
+          <input type="text" id="inMinVer" value="1.21.0" placeholder="e.g. 1.21.0">
         </div>
       </div>
       
       <div class="switch-row">
         <span class="switch-label" data-i18n="pbrLabel">Ray Tracing (PBR)</span>
         <label class="switch">
-          <input type="checkbox" id="pbrToggle">
+          <input type="checkbox" id="pbrToggle" checked>
           <span class="slider"></span>
         </label>
       </div>
@@ -165,10 +169,10 @@
       </div>
 
       <div class="section-header">
-          <span class="section-label" data-i18n="labelDep">Dependencias</span>
-          <button class="add-btn" onclick="addDependency()" data-i18n="addBtn">+ Añadir</button>
+          <span class="section-label" data-i18n="labelSub">Subpacks</span>
+          <button class="add-btn" onclick="addSubpack()" data-i18n="addBtn">+ Añadir</button>
       </div>
-      <div id="dependencyContainer"></div>
+      <div id="subpackContainer"></div>
 
       <div class="section-header">
           <span class="section-label" data-i18n="labelSettings">Configuración (Toggles)</span>
@@ -179,12 +183,6 @@
           </div>
       </div>
       <div id="settingsContainer"></div>
-
-      <div class="section-header">
-          <span class="section-label" data-i18n="labelSub">Subpacks</span>
-          <button class="add-btn" onclick="addSubpack()" data-i18n="addBtn">+ Añadir</button>
-      </div>
-      <div id="subpackContainer"></div>
 
       <div class="export-mode-container mode-pack" id="exportSwitch" onclick="toggleExportMode()">
         <div class="export-mode-thumb"></div>
@@ -215,8 +213,8 @@
     const clickSound = new Audio('click.ogg');
 
     const translations = {
-      es: { appTitle: "Base .mcpack Generator", labelIcon: "Icono", uploadBtn: "Subir Imagen", bold: "Negrita", italic: "Italic", reset: "Reset", phName: "Nombre del Pack", phAuthor: "Autor", phDesc: "Descripción", defTitle: "Nombre del Pack", defDesc: "Descripción...", labelDep: "Dependencias", labelSub: "Subpacks", addBtn: "+ Añadir", exportBtn: "EXPORTAR .MCPACK", exportJson: "EXPORTAR MANIFEST", labelSettings: "Configuración", minVer: "Versión Min. Juego", packVer: "Versión del Pack", pbrLabel: "Soporte PBR" },
-      en: { appTitle: "Base .mcpack Generator", labelIcon: "Icon", uploadBtn: "Upload Image", bold: "Bold", italic: "Italic", reset: "Reset", phName: "Pack Name", phAuthor: "Author", phDesc: "Description", defTitle: "Pack Name", defDesc: "Description...", labelDep: "Dependencies", labelSub: "Subpacks", addBtn: "+ Add", exportBtn: "EXPORT .MCPACK", exportJson: "EXPORT MANIFEST", labelSettings: "Settings", minVer: "Min Engine Version", packVer: "Pack Version", pbrLabel: "PBR Support" }
+      es: { appTitle: "Base .mcpack Generator", labelIcon: "Icono", uploadBtn: "Subir Imagen", bold: "Negrita", italic: "Italic", reset: "Reset", phName: "Nombre del Pack", phAuthor: "Autor", phDesc: "Descripción", defTitle: "Nombre del Pack", defDesc: "Descripción...", labelSub: "Subpacks", addBtn: "+ Añadir", exportBtn: "EXPORTAR .MCPACK", exportJson: "EXPORTAR MANIFEST", labelSettings: "Configuración", minVer: "Versión Min. Juego", packVer: "Versión del Pack", pbrLabel: "Soporte PBR" },
+      en: { appTitle: "Base .mcpack Generator", labelIcon: "Icon", uploadBtn: "Upload Image", bold: "Bold", italic: "Italic", reset: "Reset", phName: "Pack Name", phAuthor: "Author", phDesc: "Description", defTitle: "Pack Name", defDesc: "Description...", labelSub: "Subpacks", addBtn: "+ Add", exportBtn: "EXPORT .MCPACK", exportJson: "EXPORT MANIFEST", labelSettings: "Settings", minVer: "Min Engine Version", packVer: "Pack Version", pbrLabel: "PBR Support" }
     };
 
     function toggleTheme() {
@@ -262,8 +260,8 @@
     function setLang(lang) {
         currentLang = lang;
         document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('selected'));
-        document.getElementById(`tab-${lang}`
-                            updateTexts(); toggleLangMenu();
+        document.getElementById(`tab-${lang}`).classList.add('selected');
+              updateTexts(); toggleLangMenu();
     }
     function updateTexts() {
       document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -310,25 +308,19 @@
         return html;
     }
 
-    function addDependency() {
-        const div = document.createElement('div'); div.className='dynamic-panel dependency-item';
-        div.innerHTML = `<button class="remove-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
-        <div class="uuid-row"><input type="text" class="dep-uuid" placeholder="UUID" value="${self.crypto.randomUUID()}"><button class="bolt-btn" onclick="this.previousElementSibling.value=self.crypto.randomUUID()"><i class="fa-solid fa-bolt"></i></button></div>
-        <input type="text" class="dep-ver" placeholder="Version (e.g. 1.0.0)" value="1.0.0">`;
-        document.getElementById('dependencyContainer').appendChild(div);
-    }
-
     function addSetting(type) {
         const div = document.createElement('div'); 
         div.className=`dynamic-panel setting-item setting-${type}`;
         div.dataset.type = type;
         
         let content = `<button class="remove-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
-                       <span class="type-badge">${type}</span>
-                       <div class="input-group"><label>Display Text</label><input type="text" class="set-text" placeholder="e.g. My Setting"></div>`;
+                       <span class="type-badge">${type}</span>`;
         
-        if (type !== 'label') {
-            content += `<div class="input-group"><label>Variable Name</label><input type="text" class="set-name" placeholder="e.g. um:my_var"></div>`;
+        if (type === 'label') {
+             content += `<div class="input-group"><label>Text Content</label><textarea class="set-text" placeholder="Your label text here..."></textarea></div>`;
+        } else {
+            content += `<div class="input-group"><label>Display Text</label><input type="text" class="set-text" placeholder="e.g. My Setting"></div>
+                        <div class="input-group"><label>Variable Name</label><input type="text" class="set-name" placeholder="e.g. um:my_var"></div>`;
         }
 
         if (type === 'toggle') {
@@ -346,12 +338,12 @@
         document.getElementById('settingsContainer').appendChild(div);
     }
 
-    function addSubpack() {
+    function addSubpack(folder="", name="", tier=1) {
         const div = document.createElement('div'); div.className='dynamic-panel subpack-item';
         div.innerHTML = `<button class="remove-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
-        <input type="text" class="sub-folder" placeholder="Folder Name">
-        <input type="text" class="sub-name" placeholder="Subpack Name">
-        <input type="number" class="sub-memory" placeholder="Memory Tier" value="0">`;
+        <input type="text" class="sub-folder" placeholder="Folder Name" value="${folder}">
+        <input type="text" class="sub-name" placeholder="Subpack Name" value="${name}">
+        <input type="number" class="sub-memory" placeholder="Memory Tier" value="${tier}">`;
         document.getElementById('subpackContainer').appendChild(div);
     }
 
@@ -374,82 +366,93 @@
 
     async function exportPack() {
         const zip = new JSZip();
-        
-        const subpackElements = document.querySelectorAll('.subpack-item');
-        const subpacksData = [];
-        subpackElements.forEach(el => {
-            const folder = el.querySelector('.sub-folder').value || "default";
-            const name = el.querySelector('.sub-name').value || "Unnamed Subpack";
-            const memory = parseInt(el.querySelector('.sub-memory').value) || 0;
-            subpacksData.push({ folder_name: folder, name: name, memory_performance_tier: memory });
-            if(exportMode === 'mcpack') zip.folder("subpacks/" + folder);
-        });
 
-        const dependencyElements = document.querySelectorAll('.dependency-item');
-        const dependenciesData = [];
-        dependencyElements.forEach(el => {
-            const uuid = el.querySelector('.dep-uuid').value;
-            const verStr = el.querySelector('.dep-ver').value || "1.0.0";
-            try { 
-                const verArray = verStr.split('.').map(Number);
-                dependenciesData.push({ uuid: uuid, version: verArray }); 
-            } catch(e) {}
-        });
+        let minVer = document.getElementById('inMinVer').value || "1.21.0";
+        let packVer = document.getElementById('inPackVer').value || "1.0.0";
 
-        const settingElements = document.querySelectorAll('.setting-item');
-        const settingsData = [];
-        settingElements.forEach(el => {
-            const type = el.dataset.type;
-            const text = el.querySelector('.set-text').value || "Setting";
-            const entry = { type: type, text: text };
-            
-            if (type !== 'label') entry.name = el.querySelector('.set-name').value || "var";
+        const name = document.getElementById('inName').value || "Pack";
+        const desc = document.getElementById('inDesc').value || "";
+        const authors = document.getElementById('inAuthor').value.split(',').map(s => s.trim()).filter(s => s !== "");
+        const uuidHeader = self.crypto.randomUUID();
+        const uuidModule = self.crypto.randomUUID();
 
-            if (type === 'toggle') {
-                entry.default = el.querySelector('.set-def').checked;
-            } else if (type === 'slider') {
-                entry.min = parseFloat(el.querySelector('.set-min').value) || 0;
-                entry.max = parseFloat(el.querySelector('.set-max').value) || 10;
-                entry.step = parseFloat(el.querySelector('.set-step').value) || 1;
-                entry.default = parseFloat(el.querySelector('.set-def-val').value) || 0;
-            }
-            settingsData.push(entry);
-        });
-        
-        let minVer = [1, 20, 0];
-        try { minVer = document.getElementById('inMinVer').value.split('.').map(Number); } catch(e){}
-        
-        let packVer = [1, 0, 0];
-        try { packVer = document.getElementById('inPackVer').value.split('.').map(Number); } catch(e){}
+        const manifest = {};
 
-        const manifest = { 
-            format_version: 3, 
-            header: { 
-                name: document.getElementById('inName').value || "Pack", 
-                description: document.getElementById('inDesc').value || "", 
-                uuid: self.crypto.randomUUID(), 
-                version: packVer,
-                min_engine_version: minVer
-            }, 
-            modules: [
-                { 
-                    type: "resources", 
-                    uuid: self.crypto.randomUUID(), 
-                    version: packVer
-                }
-            ]
+        manifest["format_version"] = 3;
+
+        manifest["header"] = {
+            "description": desc,
+            "name": name,
+            "uuid": uuidHeader,
+            "version": packVer,
+            "min_engine_version": minVer
         };
 
-        if(subpacksData.length > 0) manifest.subpacks = subpacksData;
-        if(dependenciesData.length > 0) manifest.dependencies = dependenciesData;
-        if(settingsData.length > 0) manifest.settings = settingsData;
-        if(document.getElementById('pbrToggle').checked) manifest.capabilities = ["pbr"];
+        if (authors.length > 0) {
+            manifest["metadata"] = { "authors": authors };
+        }
+
+        if(document.getElementById('pbrToggle').checked) {
+            manifest["capabilities"] = ["pbr"];
+        }
+
+        manifest["modules"] = [
+            {
+                "type": "resources",
+                "uuid": uuidModule,
+                "version": packVer
+            }
+        ];
+
+        const subpackElements = document.querySelectorAll('.subpack-item');
+        if(subpackElements.length > 0) {
+            const subpacksData = [];
+            subpackElements.forEach(el => {
+                const folder = el.querySelector('.sub-folder').value || "default";
+                const sName = el.querySelector('.sub-name').value || "Unnamed";
+                const memory = parseInt(el.querySelector('.sub-memory').value) || 0;
+                
+                subpacksData.push({ 
+                    "folder_name": folder, 
+                    "name": sName, 
+                    "memory_performance_tier": memory 
+                });
+                
+                if(exportMode === 'mcpack') zip.folder("subpacks/" + folder);
+            });
+            manifest["subpacks"] = subpacksData;
+        }
+
+        const settingElements = document.querySelectorAll('.setting-item');
+        if (settingElements.length > 0) {
+            const settingsData = [];
+            
+            settingElements.forEach(el => {
+                const type = el.dataset.type;
+                const text = el.querySelector('.set-text').value || "";
+                const entry = { "type": type, "text": text };
+                
+                if (type !== 'label') entry["name"] = el.querySelector('.set-name').value || "var";
+
+                if (type === 'toggle') {
+                    entry["default"] = el.querySelector('.set-def').checked;
+                } else if (type === 'slider') {
+                    entry["default"] = parseFloat(el.querySelector('.set-def-val').value) || 0;
+                    entry["min"] = parseFloat(el.querySelector('.set-min').value) || 0;
+                    entry["max"] = parseFloat(el.querySelector('.set-max').value) || 10;
+                    entry["step"] = parseFloat(el.querySelector('.set-step').value) || 1;
+                }
+                settingsData.push(entry);
+            });
+
+            manifest["settings"] = settingsData;
+        }
 
         if (exportMode === 'json') {
-            const blob = new Blob([JSON.stringify(manifest, null, 4)], {type: "application/json"});
+            const blob = new Blob([JSON.stringify(manifest, null, 2)], {type: "application/json"});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "manifest.json"; a.click();
         } else {
-            zip.file("manifest.json", JSON.stringify(manifest, null, 4));
+            zip.file("manifest.json", JSON.stringify(manifest, null, 2));
             const icon = document.getElementById('previewIcon').src;
             if(icon.includes('base64')) zip.file("pack_icon.png", icon.split(',')[1], {base64:true});
             
@@ -458,7 +461,9 @@
         }
     }
 
-    updateTexts();
+    window.onload = () => {
+        updateTexts();
+    };
   </script>
 </body>
 </html>
